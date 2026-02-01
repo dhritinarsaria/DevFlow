@@ -1,0 +1,180 @@
+# DevFlow - Developer Productivity Platform
+
+## Overview
+DevFlow is a comprehensive productivity platform designed specifically for developers to manage their projects, organize code snippets, track tasks, and analyze their productivity metrics - all in one place.
+
+## Problem Statement
+Developers juggle multiple tools for project management, code snippet storage, task tracking, and productivity analysis. DevFlow consolidates these into a single, streamlined platform tailored for developer workflows.
+
+## Target Users
+- Individual developers managing multiple projects
+- Freelance developers tracking client work
+- Students building coding portfolios
+- Small development teams collaborating on projects
+
+## Core Features
+
+### Phase 1: MVP (Weeks 1-4)
+1. **User Authentication & Authorization**
+   - JWT-based authentication
+   - Role-based access control (User, Admin)
+   - Secure password hashing
+   - Email verification (optional)
+
+2. **Project Management**
+   - Create, read, update, delete projects
+   - Project descriptions and metadata
+   - Tag-based organization
+   - Project ownership and permissions
+
+3. **Task Management**
+   - Tasks linked to projects
+   - Priority levels (Low, Medium, High, Critical)
+   - Status tracking (Todo, In Progress, Done)
+   - Due dates and timestamps
+   - Task assignment
+
+4. **Code Snippet Library**
+   - Save code snippets with syntax highlighting
+   - Multi-language support
+   - Tagging and categorization
+   - Search functionality
+   - Private/public snippets
+
+### Phase 2: Advanced Features (Weeks 5-8)
+5. **Analytics Dashboard**
+   - Tasks completed over time
+   - Project progress tracking
+   - Productivity heatmaps
+   - Time tracking per project
+   - Code snippet usage statistics
+
+6. **Search & Filter**
+   - Global search across projects, tasks, snippets
+   - Advanced filtering by tags, dates, status
+   - Sort by various criteria
+
+7. **GitHub Integration**
+   - Connect GitHub account
+   - Pull repository statistics
+   - Display commit activity
+   - Show contribution graphs
+
+### Phase 3: Polish & Deploy (Weeks 9-12)
+8. **Real-time Collaboration**
+   - Live updates using SignalR
+   - Shared projects
+   - Real-time notifications
+
+9. **Microservices Architecture (Optional)**
+   - Auth Service
+   - Project Service
+   - Analytics Service
+   - API Gateway
+
+10. **Deployment**
+    - Azure App Service
+    - Azure SQL Database
+    - CI/CD with GitHub Actions
+    - Production-ready configuration
+
+## Tech Stack
+
+### Backend
+- **Framework:** ASP.NET Core 8.0 Web API
+- **ORM:** Entity Framework Core 8.0
+- **Database:** SQL Server Express (local) / Azure SQL (production)
+- **Authentication:** JWT (JSON Web Tokens)
+- **Real-time:** SignalR
+- **API Documentation:** Swagger/OpenAPI
+
+### Frontend
+- **Framework:** Angular 17+
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS / Bootstrap 5
+- **State Management:** RxJS
+- **Charts:** Chart.js / Recharts
+- **Code Highlighting:** Prism.js / Highlight.js
+
+### DevOps & Tools
+- **Version Control:** Git & GitHub
+- **CI/CD:** GitHub Actions
+- **API Testing:** Postman
+- **IDE:** Visual Studio 2022 / VS Code
+- **Cloud:** Azure (App Service, SQL Database, Blob Storage)
+
+### Additional Libraries
+- **AutoMapper:** Object-object mapping
+- **FluentValidation:** Input validation
+- **Serilog:** Structured logging
+- **xUnit:** Unit testing
+
+## Technical Architecture
+
+### Backend Architecture
+```
+DevFlow.API/
+├── Controllers/          # API endpoints
+├── Models/              # Request/Response DTOs
+├── Services/            # Business logic
+├── Repositories/        # Data access layer
+├── Middleware/          # Custom middleware
+└── Configuration/       # App settings
+
+DevFlow.Domain/
+├── Entities/            # Database models
+├── Enums/              # Enumerations
+└── Interfaces/         # Contracts
+
+DevFlow.Infrastructure/
+├── Data/               # DbContext, migrations
+├── Repositories/       # Repository implementations
+└── Services/           # External service integrations
+```
+
+### Database Schema (Initial)
+- **Users:** Id, Username, Email, PasswordHash, CreatedAt, Role
+- **Projects:** Id, Name, Description, OwnerId, CreatedAt, UpdatedAt, Tags
+- **Tasks:** Id, ProjectId, Title, Description, Status, Priority, DueDate, CreatedAt, CompletedAt
+- **CodeSnippets:** Id, UserId, Title, Code, Language, Tags, IsPublic, CreatedAt
+
+## Learning Objectives
+- Master ASP.NET Core Web API development
+- Implement clean architecture principles
+- Build RESTful APIs following best practices
+- Understand Entity Framework Core and migrations
+- Implement JWT authentication & authorization
+- Create responsive Angular applications
+- Practice Git workflows and version control
+- Deploy full-stack applications to cloud
+- Write unit and integration tests
+- Optimize database queries and API performance
+
+## Success Metrics
+- Clean, well-documented code
+- Working authentication system
+- CRUD operations for all entities
+- Responsive UI across devices
+- < 200ms API response times
+- Deployed and accessible online
+- Comprehensive README and documentation
+
+## Timeline
+- **Weeks 1-4:** Backend API + Database + Auth
+- **Weeks 5-8:** Frontend + Integration + Analytics
+- **Weeks 9-12:** Advanced features + Testing + Deployment
+
+## Why This Project?
+- **Demonstrates full-stack expertise** across modern .NET and Angular
+- **Shows problem-solving skills** in building developer tools
+- **Proves architectural understanding** with clean code patterns
+- **Highlights Microsoft stack proficiency** (important for Microsoft interviews)
+- **Solves a real problem** that developers face daily
+- **Scalable design** that can grow in complexity
+- **Portfolio-ready** with deployment and documentation
+
+---
+
+*Project Start Date: [Today's Date]*
+*Expected Completion: [Today's Date + 12 weeks]*
+*Developer: Dhriti Narsaria*
