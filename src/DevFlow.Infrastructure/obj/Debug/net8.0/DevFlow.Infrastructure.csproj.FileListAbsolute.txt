@@ -1,0 +1,12 @@
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\bin\Debug\net8.0\DevFlow.Infrastructure.deps.json
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\bin\Debug\net8.0\DevFlow.Infrastructure.dll
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\bin\Debug\net8.0\DevFlow.Infrastructure.pdb
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.AssemblyInfoInputs.cache
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.AssemblyInfo.cs
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.csproj.CoreCompileInputs.cache
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.sourcelink.json
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.dll
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\refint\DevFlow.Infrastructure.dll
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\DevFlow.Infrastructure.pdb
+D:\claude_project\DevFlow\src\DevFlow.Infrastructure\obj\Debug\net8.0\ref\DevFlow.Infrastructure.dll

@@ -1,0 +1,12 @@
+D:\claude_project\DevFlow\src\DevFlow.Domain\bin\Debug\net8.0\DevFlow.Domain.deps.json
+D:\claude_project\DevFlow\src\DevFlow.Domain\bin\Debug\net8.0\DevFlow.Domain.dll
+D:\claude_project\DevFlow\src\DevFlow.Domain\bin\Debug\net8.0\DevFlow.Domain.pdb
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.AssemblyInfoInputs.cache
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.AssemblyInfo.cs
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.csproj.CoreCompileInputs.cache
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.sourcelink.json
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.dll
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\refint\DevFlow.Domain.dll
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\DevFlow.Domain.pdb
+D:\claude_project\DevFlow\src\DevFlow.Domain\obj\Debug\net8.0\ref\DevFlow.Domain.dll
