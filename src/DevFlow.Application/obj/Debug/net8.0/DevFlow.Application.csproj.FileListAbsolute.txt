@@ -10,3 +10,7 @@ D:\claude_project\DevFlow\src\DevFlow.Application\obj\Debug\net8.0\DevFlow.Appli
 D:\claude_project\DevFlow\src\DevFlow.Application\obj\Debug\net8.0\refint\DevFlow.Application.dll
 D:\claude_project\DevFlow\src\DevFlow.Application\obj\Debug\net8.0\DevFlow.Application.pdb
 D:\claude_project\DevFlow\src\DevFlow.Application\obj\Debug\net8.0\ref\DevFlow.Application.dll
+D:\claude_project\DevFlow\src\DevFlow.Application\bin\Debug\net8.0\DevFlow.Domain.dll
+D:\claude_project\DevFlow\src\DevFlow.Application\bin\Debug\net8.0\DevFlow.Domain.pdb
+D:\claude_project\DevFlow\src\DevFlow.Application\obj\Debug\net8.0\DevFlow.Application.csproj.AssemblyReference.cache
+D:\claude_project\DevFlow\src\DevFlow.Application\obj\Debug\net8.0\DevFlow..012101D4.Up2Date
