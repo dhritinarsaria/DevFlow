@@ -1,16 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using DevFlow.Infrastructure.Data;
+using DevFlow.Application.Interfaces;
+using DevFlow.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Add DbContext
+// Register DbContext
+// Scoped = one instance per HTTP request
 builder.Services.AddDbContext<DevFlowDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Register Repositories
+// Scoped = new instance for each HTTP request, disposed after request completes
+// Why Scoped? DbContext is scoped, so repositories using it should be too
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+// Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
