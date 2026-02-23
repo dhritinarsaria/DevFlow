@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using DevFlow.Application.Interfaces;
 using DevFlow.Application.DTOs.Projects;
-
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 // [ApiController] - Enables automatic model validation and binding
 // [Route] - Defines URL pattern
@@ -18,6 +19,7 @@ namespace DevFlow.API.Controllers
  
     [ApiController]  // Marks this as an API controller (enables automatic validation, model binding)
     [Route("api/[controller]")]  // URL: /api/projects
+    [Authorize] 
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -40,7 +42,7 @@ namespace DevFlow.API.Controllers
         {
             // For now, we'll hardcode userId = 1 (authentication comes later)
             // In real app, this comes from JWT token
-            int currentUserId = 1;
+            int currentUserId = GetCurrentUserId();;
             
             // Call service layer
             var project = await _projectService.GetProjectByIdAsync(id, currentUserId);
@@ -157,5 +159,17 @@ namespace DevFlow.API.Controllers
             // 204 No Content - successful deletion, no response body
             return NoContent();
         }
+
+// ClaimTypes.NameIdentifier = User ID inside JWT
+// This method:
+// ✔ Extracts user ID
+// ✔ Converts it to int
+// ✔ Uses it for authorization logic
+        private int GetCurrentUserId()
+{
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    return int.Parse(userIdClaim!.Value);
+}
+
     }
 }
