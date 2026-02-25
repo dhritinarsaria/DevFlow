@@ -27,7 +27,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Register Services
 builder.Services.AddScoped<IProjectService, ProjectService>();
-
+builder.Services.AddScoped<IAuthService, AuthService>();
 // Configure JWT Authentication (ADD THIS BLOCK)
 builder.Services.AddAuthentication(options =>
 {

@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using DevFlow.Application.Interfaces;
+using DevFlow.Application.Interfaces;
 
 namespace DevFlow.API.Controllers
 {
@@ -12,12 +13,14 @@ namespace DevFlow.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IAuthService _authService;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IUserRepository userRepository, IConfiguration configuration)
+        public AuthController(IUserRepository userRepository, IAuthService authService, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _authService = authService;
         }
 
         /// <summary>
@@ -27,18 +30,15 @@ namespace DevFlow.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Find user by email
-            var user = await _userRepository.GetByEmailAsync(request.Email);
-            
+            // Validate credentials using AuthService
+            var user = await _authService.ValidateCredentialsAsync(request.Email, request.Password);
+
             if (user == null)
                 return Unauthorized(new { message = "Invalid email or password" });
-            
-            // TODO: In real app, verify password hash using BCrypt
-            // For now, we'll accept any password for testing
-            
+
             // Generate JWT token
             var token = GenerateJwtToken(user.Id, user.Email, user.Username);
-            
+
             return Ok(new LoginResponse
             {
                 Token = token,
@@ -73,7 +73,46 @@ namespace DevFlow.API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
+        /// POST /api/auth/register
+        /// Register a new user
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            try
+            {
+                // Register user (hashes password internally)
+                var user = await _authService.RegisterAsync(
+                request.Username,
+                request.Email,
+                request.Password);
+
+                // Generate JWT token for auto-login after registration
+                var token = GenerateJwtToken(user.Id, user.Email, user.Username);
+
+                return Ok(new RegisterResponse
+                {
+                    Token = token,
+                    UserId = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    Message = "Registration successful"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Email/username already exists
+                return Conflict(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                // Validation errors (password too short, etc.)
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
+
 
     // Request/Response DTOs
     public class LoginRequest
@@ -88,5 +127,21 @@ namespace DevFlow.API.Controllers
         public int UserId { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+    }
+
+    public class RegisterRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class RegisterResponse
+    {
+        public string Token { get; set; } = string.Empty;
+        public int UserId { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 }
