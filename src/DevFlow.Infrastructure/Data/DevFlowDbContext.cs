@@ -5,7 +5,7 @@ namespace DevFlow.Infrastructure.Data
 {
     public class DevFlowDbContext : DbContext
     {
-        public DevFlowDbContext(DbContextOptions<DevFlowDbContext> options) 
+        public DevFlowDbContext(DbContextOptions<DevFlowDbContext> options)
             : base(options)
         {
         }
@@ -36,7 +36,7 @@ namespace DevFlow.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Description).HasMaxLength(1000);
-                
+
                 entity.HasOne(e => e.Owner)
                     .WithMany(u => u.Projects)
                     .HasForeignKey(e => e.OwnerId)
@@ -44,15 +44,33 @@ namespace DevFlow.Infrastructure.Data
             });
 
             // Task configuration
+            // Configure Tasks table
             modelBuilder.Entity<ProjectTask>(entity =>
             {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Description).HasMaxLength(2000);
-                
-                entity.HasOne(e => e.Project)
+                entity.ToTable("Tasks");
+
+                entity.HasKey(t => t.Id);
+
+                entity.Property(t => t.Title)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(t => t.Description)
+                    .HasMaxLength(2000);
+
+                entity.Property(t => t.Status)
+                    .HasConversion<int>();  // Store enum as int
+
+                entity.Property(t => t.Priority)
+                    .HasConversion<int>();
+
+                entity.Property(t => t.CreatedAt)
+                    .IsRequired();
+
+                // Relationship: Task belongs to Project
+                entity.HasOne(t => t.Project)
                     .WithMany(p => p.Tasks)
-                    .HasForeignKey(e => e.ProjectId)
+                    .HasForeignKey(t => t.ProjectId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -63,7 +81,7 @@ namespace DevFlow.Infrastructure.Data
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Code).IsRequired();
                 entity.Property(e => e.Language).IsRequired().HasMaxLength(50);
-                
+
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.CodeSnippets)
                     .HasForeignKey(e => e.UserId)
