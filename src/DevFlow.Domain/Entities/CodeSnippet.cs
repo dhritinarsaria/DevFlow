@@ -3,7 +3,7 @@ namespace DevFlow.Domain.Entities
     public class CodeSnippet
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
+        public int OwnerId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Language { get; set; } = string.Empty;
@@ -13,6 +13,6 @@ namespace DevFlow.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         
         // Navigation properties
-        public User User { get; set; } = null!;
+        public User Owner { get; set; } = null!;
     }
 }

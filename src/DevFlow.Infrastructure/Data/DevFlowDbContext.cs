@@ -82,9 +82,9 @@ namespace DevFlow.Infrastructure.Data
                 entity.Property(e => e.Code).IsRequired();
                 entity.Property(e => e.Language).IsRequired().HasMaxLength(50);
 
-                entity.HasOne(e => e.User)
+                entity.HasOne(e => e.Owner)
                     .WithMany(u => u.CodeSnippets)
-                    .HasForeignKey(e => e.UserId)
+                    .HasForeignKey(e => e.OwnerId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
