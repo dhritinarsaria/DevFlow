@@ -30,6 +30,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ISnippetRepository, SnippetRepository>();
 
 // Configure JWT Authentication (ADD THIS BLOCK)
 builder.Services.AddAuthentication(options =>
