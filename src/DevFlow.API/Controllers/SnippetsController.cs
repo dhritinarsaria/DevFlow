@@ -24,11 +24,31 @@ namespace DevFlow.API.Controllers
             _userRepository = userRepository;
         }
 
+       
+        
+        /// <summary>
+        /// GET /api/snippets?search=regex&language=JavaScript
+        /// Search and filter user's snippets
+        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetMySnippets()
+        public async Task<IActionResult> GetMySnippets(
+            [FromQuery] string? search,     // Optional search term
+            [FromQuery] string? language)   // Optional language filter
         {
             int userId = GetCurrentUserId();
-            var snippets = await _snippetRepository.GetByUserIdAsync(userId);
+
+            IEnumerable<CodeSnippet> snippets;
+
+            if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(language))
+            {
+                // Use search if filters provided
+                snippets = await _snippetRepository.SearchAsync(userId, search, language);
+            }
+            else
+            {
+                // Get all snippets
+                snippets = await _snippetRepository.GetByUserIdAsync(userId);
+            }
 
             var snippetDtos = snippets.Select(s => new SnippetDto
             {
@@ -36,8 +56,8 @@ namespace DevFlow.API.Controllers
                 Title = s.Title,
                 Code = s.Code,
                 Language = s.Language,
-                Tags = !string.IsNullOrEmpty(s.Tags) 
-                    ? s.Tags.Split(',').ToList() 
+                Tags = !string.IsNullOrEmpty(s.Tags)
+                    ? s.Tags.Split(',').ToList()
                     : new List<string>(),
                 OwnerId = s.OwnerId,
                 OwnerUsername = s.Owner?.Username ?? "Unknown",
@@ -46,7 +66,7 @@ namespace DevFlow.API.Controllers
 
             return Ok(snippetDtos);
         }
-
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSnippet(int id)
         {
@@ -139,5 +159,47 @@ namespace DevFlow.API.Controllers
 
             return int.Parse(userIdClaim.Value);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSnippet(int id, [FromBody] UpdateSnippetDto updateDto)
+        {
+            int userId = GetCurrentUserId();
+
+            var snippet = await _snippetRepository.GetByIdAsync(id);
+
+            if (snippet == null || snippet.OwnerId != userId)
+                return NotFound(new { message = "Snippet not found" });
+
+            if (string.IsNullOrWhiteSpace(updateDto.Title))
+                return BadRequest(new { message = "Title is required" });
+
+            if (string.IsNullOrWhiteSpace(updateDto.Code))
+                return BadRequest(new { message = "Code is required" });
+
+            // Update fields
+            snippet.Title = updateDto.Title;
+            snippet.Code = updateDto.Code;
+            snippet.Language = updateDto.Language;
+            snippet.Tags = updateDto.Tags != null && updateDto.Tags.Any()
+                ? string.Join(",", updateDto.Tags)
+                : string.Empty;
+
+            await _snippetRepository.UpdateAsync(snippet);
+
+            var snippetDto = new SnippetDto
+            {
+                Id = snippet.Id,
+                Title = snippet.Title,
+                Code = snippet.Code,
+                Language = snippet.Language,
+                Tags = updateDto.Tags ?? new List<string>(),
+                OwnerId = snippet.OwnerId,
+                OwnerUsername = snippet.Owner?.Username ?? "Unknown",
+                CreatedAt = snippet.CreatedAt
+            };
+
+            return Ok(snippetDto);
+        }
+
     }
 }
