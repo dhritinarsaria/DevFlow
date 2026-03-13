@@ -9,6 +9,7 @@ namespace DevFlow.Application.Interfaces
         Task<CodeSnippet> AddAsync(CodeSnippet snippet);
         Task UpdateAsync(CodeSnippet snippet);
         Task DeleteAsync(int id);
-        Task<IEnumerable<CodeSnippet>> SearchAsync(int userId, string? searchTerm, string? language);
+        Task<IEnumerable<CodeSnippet>> SearchAsync(int userId, string? searchTerm, string? language,
+    List<string>? tags);
     }
 }

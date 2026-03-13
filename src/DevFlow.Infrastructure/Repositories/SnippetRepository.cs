@@ -28,7 +28,7 @@ namespace DevFlow.Infrastructure.Repositories
         public async Task<IEnumerable<CodeSnippet>> GetByUserIdAsync(int userId)
         {
             return await _context.CodeSnippets
-                .Include(s => s.Owner) 
+                .Include(s => s.Owner)
                 .Where(s => s.OwnerId == userId)
                 .OrderByDescending(s => s.CreatedAt)
                 .AsNoTracking()
@@ -59,31 +59,44 @@ namespace DevFlow.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task<IEnumerable<CodeSnippet>> SearchAsync(int userId, string? searchTerm, string? language)
-{
-    var query = _context.CodeSnippets
-        .Include(s => s.Owner)
-        .Where(s => s.OwnerId == userId)
-        .AsQueryable();
-    
-    // Filter by search term (title or tags)
-    if (!string.IsNullOrWhiteSpace(searchTerm))
-    {
-        query = query.Where(s => 
-            s.Title.Contains(searchTerm) || 
-            s.Tags.Contains(searchTerm));
-    }
-    
-    // Filter by language
-    if (!string.IsNullOrWhiteSpace(language))
-    {
-        query = query.Where(s => s.Language == language);
-    }
-    
-    return await query
-        .OrderByDescending(s => s.CreatedAt)
-        .AsNoTracking()
-        .ToListAsync();
-}
+        public async Task<IEnumerable<CodeSnippet>> SearchAsync(
+            int userId,
+            string? searchTerm,
+            string? language,
+            List<string>? tags)  // ← Add tags parameter
+        {
+            var query = _context.CodeSnippets
+                .Include(s => s.Owner)
+                .Where(s => s.OwnerId == userId);
+
+            // Filter by search term
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(s =>
+                    s.Title.Contains(searchTerm) ||
+                    s.Code.Contains(searchTerm) ||
+                    s.Tags.Contains(searchTerm));
+            }
+
+            // Filter by language
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                query = query.Where(s => s.Language == language);
+            }
+
+            // Filter by tags (must contain ALL specified tags)
+            if (tags != null && tags.Any())
+            {
+                foreach (var tag in tags)
+                {
+                    query = query.Where(s => s.Tags.Contains(tag));
+                }
+            }
+
+            return await query
+                .OrderByDescending(s => s.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

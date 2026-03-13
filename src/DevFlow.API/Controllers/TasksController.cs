@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevFlow.Application.Interfaces;
 using DevFlow.Application.DTOs.Tasks;
-using DevFlow.Domain.Entities;
-using DevFlow.Domain.Enums;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace DevFlow.API.Controllers
 {
@@ -13,159 +12,95 @@ namespace DevFlow.API.Controllers
     [Authorize]
     public class TasksController : ControllerBase
     {
-        private readonly ITaskRepository _taskRepository;
-        private readonly IProjectRepository _projectRepository;
+        private readonly ITaskService _taskService;
 
-        public TasksController(
-            ITaskRepository taskRepository,
-            IProjectRepository projectRepository)
+        public TasksController(ITaskService taskService)
         {
-            _taskRepository = taskRepository;
-            _projectRepository = projectRepository;
+            _taskService = taskService;
         }
 
-        /// <summary>
-        /// GET /api/projects/{projectId}/tasks
-        /// Get all tasks for a project
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetProjectTasks(int projectId)
         {
             int userId = GetCurrentUserId();
-
-            // Verify user owns project
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project == null || project.OwnerId != userId)
-                return NotFound(new { message = "Project not found" });
-
-            var tasks = await _taskRepository.GetByProjectIdAsync(projectId);
-
-            var taskDtos = tasks.Select(t => MapToTaskDto(t, project.Name));
-            return Ok(taskDtos);
+            var tasks = await _taskService.GetProjectTasksAsync(projectId, userId);
+            return Ok(tasks);
         }
 
-        /// <summary>
-        /// POST /api/projects/{projectId}/tasks
-        /// Create a new task
-        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTask(int projectId, int id)
+        {
+            int userId = GetCurrentUserId();
+            var task = await _taskService.GetTaskByIdAsync(id, userId);
+
+            if (task == null)
+                return NotFound(new { message = "Task not found" });
+
+            return Ok(task);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTask(int projectId, [FromBody] CreateTaskDto createDto)
         {
             int userId = GetCurrentUserId();
 
-            // Verify user owns project
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project == null || project.OwnerId != userId)
-                return NotFound(new { message = "Project not found" });
-
-            // Validate
-            if (string.IsNullOrWhiteSpace(createDto.Title))
-                return BadRequest(new { message = "Title is required" });
-
-            if (createDto.Priority < 1 || createDto.Priority > 4)
-                return BadRequest(new { message = "Priority must be 1-4" });
-
-            var task = new ProjectTask
+            try
             {
-                Title = createDto.Title,
-                Description = createDto.Description,
-                ProjectId = projectId,
-                Status = ProjectTaskStatus.Todo,
-                Priority = (TaskPriority)createDto.Priority,
-                DueDate = createDto.DueDate
-            };
-
-            var createdTask = await _taskRepository.AddAsync(task);
-            createdTask.Project = project;
-
-            return CreatedAtAction(
-                nameof(GetProjectTasks),
-                new { projectId },
-                MapToTaskDto(createdTask, project.Name));
+                var task = await _taskService.CreateTaskAsync(projectId, createDto, userId);
+                return CreatedAtAction(nameof(GetTask), new { projectId, id = task.Id }, task);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// PUT /api/projects/{projectId}/tasks/{id}
-        /// Update a task
-        /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(
-            int projectId,
-            int id,
-            [FromBody] UpdateTaskDto updateDto)
+        public async Task<IActionResult> UpdateTask(int projectId, int id, [FromBody] UpdateTaskDto updateDto)
         {
             int userId = GetCurrentUserId();
 
-            // Verify user owns project
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project == null || project.OwnerId != userId)
-                return NotFound(new { message = "Project not found" });
+            try
+            {
+                var task = await _taskService.UpdateTaskAsync(projectId, id, updateDto, userId);
 
-            var task = await _taskRepository.GetByIdAsync(id);
-            if (task == null || task.ProjectId != projectId)
-                return NotFound(new { message = "Task not found" });
+                if (task == null)
+                    return NotFound(new { message = "Task not found" });
 
-            // Validate
-            if (string.IsNullOrWhiteSpace(updateDto.Title))
-                return BadRequest(new { message = "Title is required" });
-
-            // Update
-            task.Title = updateDto.Title;
-            task.Description = updateDto.Description;
-            task.Status = (ProjectTaskStatus)updateDto.Status;
-            task.Priority = (TaskPriority)updateDto.Priority;
-            task.DueDate = updateDto.DueDate;
-
-            await _taskRepository.UpdateAsync(task);
-
-            task.Project = project;
-            return Ok(MapToTaskDto(task, project.Name));
+                return Ok(task);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// DELETE /api/projects/{projectId}/tasks/{id}
-        /// Delete a task
-        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int projectId, int id)
         {
             int userId = GetCurrentUserId();
+            var deleted = await _taskService.DeleteTaskAsync(projectId, id, userId);
 
-            // Verify user owns project
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project == null || project.OwnerId != userId)
-                return NotFound(new { message = "Project not found" });
-
-            var task = await _taskRepository.GetByIdAsync(id);
-            if (task == null || task.ProjectId != projectId)
+            if (!deleted)
                 return NotFound(new { message = "Task not found" });
-
-            await _taskRepository.DeleteAsync(id);
 
             return NoContent();
         }
 
-        private TaskDto MapToTaskDto(ProjectTask task, string projectName)
-        {
-            return new TaskDto
-            {
-                Id = task.Id,
-                Title = task.Title,
-                Description = task.Description,
-                Status = task.Status.ToString(),
-                Priority = task.Priority.ToString(),
-                DueDate = task.DueDate,
-                ProjectId = task.ProjectId,
-                ProjectName = projectName,
-                CreatedAt = task.CreatedAt,
-                UpdatedAt = task.UpdatedAt
-            };
-        }
-
         private int GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            return int.Parse(userIdClaim!.Value);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)
+                           ?? User.FindFirst("sub")
+                           ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
+
+            if (userIdClaim == null)
+                throw new UnauthorizedAccessException("User ID not found in token");
+
+            return int.Parse(userIdClaim.Value);
         }
     }
 }

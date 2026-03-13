@@ -23,14 +23,18 @@ builder.Services.AddDbContext<DevFlowDbContext>(options =>
 // Why Scoped? DbContext is scoped, so repositories using it should be too
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ISnippetRepository, SnippetRepository>();
+builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
 // Register Services
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-builder.Services.AddScoped<ISnippetRepository, SnippetRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();           // ← ADD
+builder.Services.AddScoped<ISnippetService, SnippetService>();     // ← ADD
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>(); // ← ADD
+
 
 // Configure JWT Authentication (ADD THIS BLOCK)
 builder.Services.AddAuthentication(options =>

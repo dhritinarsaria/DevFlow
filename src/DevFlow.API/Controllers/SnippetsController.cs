@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevFlow.Application.Interfaces;
 using DevFlow.Application.DTOs.Snippets;
-using DevFlow.Domain.Entities;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -13,84 +12,43 @@ namespace DevFlow.API.Controllers
     [Authorize]
     public class SnippetsController : ControllerBase
     {
-        private readonly ISnippetRepository _snippetRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly ISnippetService _snippetService;
 
-        public SnippetsController(
-            ISnippetRepository snippetRepository,
-            IUserRepository userRepository)
+        public SnippetsController(ISnippetService snippetService)
         {
-            _snippetRepository = snippetRepository;
-            _userRepository = userRepository;
+            _snippetService = snippetService;
         }
 
-       
-        
-        /// <summary>
-        /// GET /api/snippets?search=regex&language=JavaScript
-        /// Search and filter user's snippets
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetMySnippets(
-            [FromQuery] string? search,     // Optional search term
-            [FromQuery] string? language)   // Optional language filter
+            [FromQuery] string? search,
+            [FromQuery] string? language,
+            [FromQuery] string? tags)
         {
             int userId = GetCurrentUserId();
 
-            IEnumerable<CodeSnippet> snippets;
-
-            if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(language))
+            List<string>? tagList = null;
+            if (!string.IsNullOrWhiteSpace(tags))
             {
-                // Use search if filters provided
-                snippets = await _snippetRepository.SearchAsync(userId, search, language);
-            }
-            else
-            {
-                // Get all snippets
-                snippets = await _snippetRepository.GetByUserIdAsync(userId);
+                tagList = tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                             .Select(t => t.Trim())
+                             .ToList();
             }
 
-            var snippetDtos = snippets.Select(s => new SnippetDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Code = s.Code,
-                Language = s.Language,
-                Tags = !string.IsNullOrEmpty(s.Tags)
-                    ? s.Tags.Split(',').ToList()
-                    : new List<string>(),
-                OwnerId = s.OwnerId,
-                OwnerUsername = s.Owner?.Username ?? "Unknown",
-                CreatedAt = s.CreatedAt
-            });
-
-            return Ok(snippetDtos);
+            var snippets = await _snippetService.GetUserSnippetsAsync(userId, search, language, tagList);
+            return Ok(snippets);
         }
-        
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSnippet(int id)
         {
             int userId = GetCurrentUserId();
-            var snippet = await _snippetRepository.GetByIdAsync(id);
+            var snippet = await _snippetService.GetSnippetByIdAsync(id, userId);
 
-            if (snippet == null || snippet.OwnerId != userId)
+            if (snippet == null)
                 return NotFound(new { message = "Snippet not found" });
 
-            var snippetDto = new SnippetDto
-            {
-                Id = snippet.Id,
-                Title = snippet.Title,
-                Code = snippet.Code,
-                Language = snippet.Language,
-                Tags = !string.IsNullOrEmpty(snippet.Tags)
-                    ? snippet.Tags.Split(',').ToList()
-                    : new List<string>(),
-                OwnerId = snippet.OwnerId,
-                OwnerUsername = snippet.Owner?.Username ?? "Unknown",
-                CreatedAt = snippet.CreatedAt
-            };
-
-            return Ok(snippetDto);
+            return Ok(snippet);
         }
 
         [HttpPost]
@@ -98,53 +56,50 @@ namespace DevFlow.API.Controllers
         {
             int userId = GetCurrentUserId();
 
-            if (string.IsNullOrWhiteSpace(createDto.Title))
-                return BadRequest(new { message = "Title is required" });
-
-            if (string.IsNullOrWhiteSpace(createDto.Code))
-                return BadRequest(new { message = "Code is required" });
-
-            var user = await _userRepository.GetByIdAsync(userId);
-
-            var snippet = new CodeSnippet
+            try
             {
-                Title = createDto.Title,
-                Code = createDto.Code,
-                Language = createDto.Language,
-                Tags = createDto.Tags != null && createDto.Tags.Any()
-                    ? string.Join(",", createDto.Tags)
-                    : string.Empty,
-                OwnerId = userId
-            };
-
-            var created = await _snippetRepository.AddAsync(snippet);
-            created.Owner = user!;
-
-            var snippetDto = new SnippetDto
+                var snippet = await _snippetService.CreateSnippetAsync(createDto, userId);
+                return CreatedAtAction(nameof(GetSnippet), new { id = snippet.Id }, snippet);
+            }
+            catch (ArgumentException ex)
             {
-                Id = created.Id,
-                Title = created.Title,
-                Code = created.Code,
-                Language = created.Language,
-                Tags = createDto.Tags ?? new List<string>(),
-                OwnerId = created.OwnerId,
-                OwnerUsername = user!.Username,
-                CreatedAt = created.CreatedAt
-            };
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
 
-            return CreatedAtAction(nameof(GetSnippet), new { id = created.Id }, snippetDto);
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSnippet(int id, [FromBody] UpdateSnippetDto updateDto)
+        {
+            int userId = GetCurrentUserId();
+
+            try
+            {
+                var snippet = await _snippetService.UpdateSnippetAsync(id, updateDto, userId);
+
+                if (snippet == null)
+                    return NotFound(new { message = "Snippet not found" });
+
+                return Ok(snippet);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSnippet(int id)
         {
             int userId = GetCurrentUserId();
-            var snippet = await _snippetRepository.GetByIdAsync(id);
+            var deleted = await _snippetService.DeleteSnippetAsync(id, userId);
 
-            if (snippet == null || snippet.OwnerId != userId)
+            if (!deleted)
                 return NotFound(new { message = "Snippet not found" });
 
-            await _snippetRepository.DeleteAsync(id);
             return NoContent();
         }
 
@@ -159,47 +114,5 @@ namespace DevFlow.API.Controllers
 
             return int.Parse(userIdClaim.Value);
         }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSnippet(int id, [FromBody] UpdateSnippetDto updateDto)
-        {
-            int userId = GetCurrentUserId();
-
-            var snippet = await _snippetRepository.GetByIdAsync(id);
-
-            if (snippet == null || snippet.OwnerId != userId)
-                return NotFound(new { message = "Snippet not found" });
-
-            if (string.IsNullOrWhiteSpace(updateDto.Title))
-                return BadRequest(new { message = "Title is required" });
-
-            if (string.IsNullOrWhiteSpace(updateDto.Code))
-                return BadRequest(new { message = "Code is required" });
-
-            // Update fields
-            snippet.Title = updateDto.Title;
-            snippet.Code = updateDto.Code;
-            snippet.Language = updateDto.Language;
-            snippet.Tags = updateDto.Tags != null && updateDto.Tags.Any()
-                ? string.Join(",", updateDto.Tags)
-                : string.Empty;
-
-            await _snippetRepository.UpdateAsync(snippet);
-
-            var snippetDto = new SnippetDto
-            {
-                Id = snippet.Id,
-                Title = snippet.Title,
-                Code = snippet.Code,
-                Language = snippet.Language,
-                Tags = updateDto.Tags ?? new List<string>(),
-                OwnerId = snippet.OwnerId,
-                OwnerUsername = snippet.Owner?.Username ?? "Unknown",
-                CreatedAt = snippet.CreatedAt
-            };
-
-            return Ok(snippetDto);
-        }
-
     }
 }
