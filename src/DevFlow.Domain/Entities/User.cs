@@ -11,6 +11,8 @@ namespace DevFlow.Domain.Entities
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public UserRole Role { get; set; }
+        public string? Preferences { get; set; }
+
         
         // Navigation properties
         public ICollection<Project> Projects { get; set; } = new List<Project>();

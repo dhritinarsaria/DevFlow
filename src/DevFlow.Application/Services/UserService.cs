@@ -1,9 +1,10 @@
+using System.Text.Json;
 using DevFlow.Application.DTOs.Users;
 using DevFlow.Application.Interfaces;
 
 namespace DevFlow.Application.Services
 {
-    
+
     /// Service for user profile operations
     public class UserService : IUserService
     {
@@ -18,18 +19,18 @@ namespace DevFlow.Application.Services
             _projectRepository = projectRepository;
         }
 
-   
+
         /// Get user profile with statistics
         public async Task<UserProfileDto?> GetProfileAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            
+
             if (user == null)
                 return null;
 
             // Get user's projects for statistics
             var projects = await _projectRepository.GetByUserIdAsync(userId);
-            
+
             return new UserProfileDto
             {
                 Id = user.Id,
@@ -41,13 +42,13 @@ namespace DevFlow.Application.Services
             };
         }
 
-      
+
         /// Update user profile (username only)
         /// Email cannot be changed for security
         public async Task<UserProfileDto?> UpdateProfileAsync(int userId, UpdateProfileDto updateDto)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            
+
             if (user == null)
                 return null;
 
@@ -82,13 +83,13 @@ namespace DevFlow.Application.Services
         public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            
+
             if (user == null)
                 return false;
 
             // Verify current password
             bool isCurrentPasswordValid = BCrypt.Net.BCrypt.Verify(
-                changePasswordDto.CurrentPassword, 
+                changePasswordDto.CurrentPassword,
                 user.PasswordHash);
 
             if (!isCurrentPasswordValid)
@@ -109,6 +110,50 @@ namespace DevFlow.Application.Services
             await _userRepository.UpdateAsync(user);
 
             return true;
+        }
+
+
+
+        // Implement in UserService
+        public async Task<UserPreferencesDto> GetPreferencesAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("User not found");
+
+            if (string.IsNullOrWhiteSpace(user.Preferences))
+            {
+                // Return default preferences
+                return new UserPreferencesDto();
+            }
+
+            return JsonSerializer.Deserialize<UserPreferencesDto>(user.Preferences)
+                   ?? new UserPreferencesDto();
+        }
+
+        public async Task<UserPreferencesDto> UpdatePreferencesAsync(int userId, UpdatePreferencesDto updateDto)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("User not found");
+
+            // Get current preferences or defaults
+            var preferences = string.IsNullOrWhiteSpace(user.Preferences)
+                ? new UserPreferencesDto()
+                : JsonSerializer.Deserialize<UserPreferencesDto>(user.Preferences)
+                  ?? new UserPreferencesDto();
+
+            // Update only provided fields
+            if (updateDto.Theme != null) preferences.Theme = updateDto.Theme;
+            if (updateDto.EmailNotifications.HasValue) preferences.EmailNotifications = updateDto.EmailNotifications.Value;
+            if (updateDto.TaskReminders.HasValue) preferences.TaskReminders = updateDto.TaskReminders.Value;
+            if (updateDto.DefaultProjectView != null) preferences.DefaultProjectView = updateDto.DefaultProjectView;
+
+            // Save back to user
+            user.Preferences = JsonSerializer.Serialize(preferences);
+            await _userRepository.UpdateAsync(user);
+
+            return preferences;
         }
     }
 }
