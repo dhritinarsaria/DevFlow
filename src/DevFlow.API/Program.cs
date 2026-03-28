@@ -3,15 +3,20 @@ using Microsoft.OpenApi.Models;
 using DevFlow.Infrastructure.Data;
 using DevFlow.Application.Interfaces;
 using DevFlow.Infrastructure.Repositories;
-using DevFlow.Application.Services; 
+using DevFlow.Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DevFlow.API.Hubs;
+using DevFlow.Application.Interfaces.Services;
+using DevFlow.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
 
 // Register DbContext
 // Scoped = one instance per HTTP request
@@ -27,6 +32,8 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ISnippetRepository, SnippetRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
+
+
 // Register Services
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -34,7 +41,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITaskService, TaskService>();           // ← ADD
 builder.Services.AddScoped<ISnippetService, SnippetService>();     // ← ADD
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>(); // ← ADD
-
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSignalR();
 
 // Configure JWT Authentication (ADD THIS BLOCK)
 builder.Services.AddAuthentication(options =>
@@ -88,6 +96,18 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "http://localhost:3000")  // Angular/React ports
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();  // Important for SignalR!
+    });
+});
+
+
 var app = builder.Build();
 // Seed database (add this block)
 using (var scope = app.Services.CreateScope())
@@ -107,6 +127,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+app.UseCors("AllowAll"); 
+app.MapHub<TaskHub>("/hubs/tasks");
+
 
 app.MapControllers();
 

@@ -64,7 +64,7 @@ namespace DevFlow.Infrastructure.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("CodeSnippets");
+                    b.ToTable("CodeSnippets", (string)null);
                 });
 
             modelBuilder.Entity("DevFlow.Domain.Entities.Project", b =>
@@ -102,7 +102,7 @@ namespace DevFlow.Infrastructure.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("DevFlow.Domain.Entities.ProjectTask", b =>
@@ -189,7 +189,7 @@ namespace DevFlow.Infrastructure.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("DevFlow.Domain.Entities.CodeSnippet", b =>

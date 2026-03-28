@@ -2,6 +2,8 @@ using DevFlow.Application.Interfaces;
 using DevFlow.Application.DTOs.Tasks;
 using DevFlow.Domain.Entities;
 using DevFlow.Domain.Enums;
+using DevFlow.Application.Interfaces.Services;
+
 
 namespace DevFlow.Application.Services
 {
@@ -9,13 +11,15 @@ namespace DevFlow.Application.Services
     {
         private readonly ITaskRepository _taskRepository;
         private readonly IProjectRepository _projectRepository;
-
+        private readonly INotificationService _notificationService;
+        
         public TaskService(
             ITaskRepository taskRepository,
-            IProjectRepository projectRepository)
+            IProjectRepository projectRepository,INotificationService notificationService) 
         {
             _taskRepository = taskRepository;
             _projectRepository = projectRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<TaskDto>> GetProjectTasksAsync(int projectId, int userId)
@@ -64,6 +68,8 @@ namespace DevFlow.Application.Services
             };
 
             var createdTask = await _taskRepository.AddAsync(task);
+             var taskDto = MapToTaskDto(createdTask, project.Name);
+             await _notificationService.NotifyTaskCreatedAsync(projectId, taskDto);
             return MapToTaskDto(createdTask, project.Name);
         }
 
@@ -87,6 +93,9 @@ namespace DevFlow.Application.Services
             task.DueDate = updateDto.DueDate;
 
             await _taskRepository.UpdateAsync(task);
+             var taskDto = MapToTaskDto(task, project.Name);
+    
+    await _notificationService.NotifyTaskUpdatedAsync(projectId, taskDto);
             return MapToTaskDto(task, project.Name);
         }
 
@@ -101,6 +110,7 @@ namespace DevFlow.Application.Services
                 return false;
 
             await _taskRepository.DeleteAsync(taskId);
+             await _notificationService.NotifyTaskDeletedAsync(projectId, taskId); 
             return true;
         }
 

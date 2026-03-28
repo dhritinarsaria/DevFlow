@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevFlow WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #log { background: #f0f0f0; padding: 10px; height: 400px; overflow-y: scroll; }
+        .created { color: green; font-weight: bold; }
+        .updated { color: blue; font-weight: bold; }
+        .deleted { color: red; font-weight: bold; }
+        input, button { padding: 10px; margin: 10px 0; }
+        input { width: 500px; }
+    </style>
+</head>
+<body>
+    <h1>DevFlow WebSocket Test</h1>
+    
+    <div>
+        <label>JWT Token:</label><br>
+        <input type="text" id="token" placeholder="Paste your JWT token here">
+    </div>
+    
+    <div>
+        <label>Project ID:</label><br>
+        <input type="number" id="projectId" value="1">
+    </div>
+    
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+    
+    <h2>Event Log:</h2>
+    <div id="log"></div>
+    
+    <script>
+        let connection = null;
+        
+        function log(message, className = '') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = className;
+            line.textContent = `[${time}] ${message}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        async function connect() {
+            const token = document.getElementById('token').value;
+            const projectId = parseInt(document.getElementById('projectId').value);
+            
+            if (!token) {
+                alert('Please enter JWT token!');
+                return;
+            }
+            
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:5111/hubs/tasks", {
+                    accessTokenFactory: () => token
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+            
+            // Listen for events
+            connection.on("TaskCreated", (task) => {
+                log(`TASK CREATED: ${task.title} (ID: ${task.id})`, 'created');
+                log(`  Details: ${JSON.stringify(task)}`);
+            });
+            
+            connection.on("TaskUpdated", (task) => {
+                log(`TASK UPDATED: ${task.title} (ID: ${task.id})`, 'updated');
+                log(`  Status: ${task.status}, Priority: ${task.priority}`);
+            });
+            
+            connection.on("TaskDeleted", (taskId) => {
+                log(`TASK DELETED: ID ${taskId}`, 'deleted');
+            });
+            
+            try {
+                await connection.start();
+                log('✅ Connected to SignalR hub!', 'created');
+                
+                await connection.invoke("JoinProject", projectId);
+                log(`✅ Joined project_${projectId} group!`, 'created');
+                
+            } catch (err) {
+                log(`❌ Error: ${err}`, 'deleted');
+            }
+        }
+        
+        async function disconnect() {
+            if (connection) {
+                await connection.stop();
+                log('Disconnected', 'deleted');
+            }
+        }
+    </script>
+</body>
+</html>
