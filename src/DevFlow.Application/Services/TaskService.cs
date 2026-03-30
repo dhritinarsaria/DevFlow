@@ -1,9 +1,10 @@
-using DevFlow.Application.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
+//using DevFlow.Application.Interfaces.Repositories;
+using DevFlow.Application.Interfaces.Services;
 using DevFlow.Application.DTOs.Tasks;
 using DevFlow.Domain.Entities;
 using DevFlow.Domain.Enums;
-using DevFlow.Application.Interfaces.Services;
-
+using DevFlow.Application.Interfaces;
 
 namespace DevFlow.Application.Services
 {
@@ -12,14 +13,18 @@ namespace DevFlow.Application.Services
         private readonly ITaskRepository _taskRepository;
         private readonly IProjectRepository _projectRepository;
         private readonly INotificationService _notificationService;
-        
+        private readonly IMemoryCache _cache;
+
         public TaskService(
             ITaskRepository taskRepository,
-            IProjectRepository projectRepository,INotificationService notificationService) 
+            IProjectRepository projectRepository,
+            INotificationService notificationService,
+            IMemoryCache cache)
         {
             _taskRepository = taskRepository;
             _projectRepository = projectRepository;
             _notificationService = notificationService;
+            _cache = cache;
         }
 
         public async Task<IEnumerable<TaskDto>> GetProjectTasksAsync(int projectId, int userId)
@@ -68,9 +73,15 @@ namespace DevFlow.Application.Services
             };
 
             var createdTask = await _taskRepository.AddAsync(task);
-             var taskDto = MapToTaskDto(createdTask, project.Name);
-             await _notificationService.NotifyTaskCreatedAsync(projectId, taskDto);
-            return MapToTaskDto(createdTask, project.Name);
+            var taskDto = MapToTaskDto(createdTask, project.Name);
+            
+            // Send notification
+            await _notificationService.NotifyTaskCreatedAsync(projectId, taskDto);
+            
+            // Invalidate analytics cache
+            InvalidateAnalyticsCache(projectId, userId);
+            
+            return taskDto;
         }
 
         public async Task<TaskDto?> UpdateTaskAsync(int projectId, int taskId, UpdateTaskDto updateDto, int userId)
@@ -93,10 +104,15 @@ namespace DevFlow.Application.Services
             task.DueDate = updateDto.DueDate;
 
             await _taskRepository.UpdateAsync(task);
-             var taskDto = MapToTaskDto(task, project.Name);
-    
-    await _notificationService.NotifyTaskUpdatedAsync(projectId, taskDto);
-            return MapToTaskDto(task, project.Name);
+            var taskDto = MapToTaskDto(task, project.Name);
+            
+            // Send notification
+            await _notificationService.NotifyTaskUpdatedAsync(projectId, taskDto);
+            
+            // Invalidate analytics cache
+            InvalidateAnalyticsCache(projectId, userId);
+            
+            return taskDto;
         }
 
         public async Task<bool> DeleteTaskAsync(int projectId, int taskId, int userId)
@@ -110,8 +126,20 @@ namespace DevFlow.Application.Services
                 return false;
 
             await _taskRepository.DeleteAsync(taskId);
-             await _notificationService.NotifyTaskDeletedAsync(projectId, taskId); 
+            
+            // Send notification
+            await _notificationService.NotifyTaskDeletedAsync(projectId, taskId);
+            
+            // Invalidate analytics cache
+            InvalidateAnalyticsCache(projectId, userId);
+            
             return true;
+        }
+
+        private void InvalidateAnalyticsCache(int projectId, int userId)
+        {
+            _cache.Remove($"analytics:user:{userId}");
+            _cache.Remove($"analytics:project:{projectId}");
         }
 
         private TaskDto MapToTaskDto(ProjectTask task, string projectName)

@@ -1,22 +1,35 @@
 using Microsoft.EntityFrameworkCore;
-using DevFlow.Application.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
+//using DevFlow.Application.Interfaces.Repositories;
 using DevFlow.Application.DTOs.Analytics;
 using DevFlow.Infrastructure.Data;
 using DevFlow.Domain.Enums;
+using DevFlow.Application.Interfaces;
 
 namespace DevFlow.Infrastructure.Repositories
 {
     public class AnalyticsRepository : IAnalyticsRepository
     {
         private readonly DevFlowDbContext _context;
+        private readonly IMemoryCache _cache;
 
-        public AnalyticsRepository(DevFlowDbContext context)
+        public AnalyticsRepository(DevFlowDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public async Task<UserAnalyticsDto> GetUserAnalyticsAsync(int userId)
         {
+            // Try to get from cache
+            string cacheKey = $"analytics:user:{userId}";
+            
+            if (_cache.TryGetValue(cacheKey, out UserAnalyticsDto? cachedAnalytics))
+            {
+                return cachedAnalytics!;
+            }
+
+            // Cache miss - compute analytics
             var projects = await _context.Projects
                 .Include(p => p.Tasks)
                 .Where(p => p.OwnerId == userId)
@@ -40,7 +53,7 @@ namespace DevFlow.Infrastructure.Repositories
             var totalTasks = projectAnalytics.Sum(p => p.TotalTasks);
             var completedTasks = projectAnalytics.Sum(p => p.CompletedTasks);
 
-            return new UserAnalyticsDto
+            var analytics = new UserAnalyticsDto
             {
                 TotalProjects = projects.Count,
                 TotalTasks = totalTasks,
@@ -50,10 +63,28 @@ namespace DevFlow.Infrastructure.Repositories
                     : 0,
                 ProjectBreakdown = projectAnalytics
             };
+
+            // Store in cache (5 minutes)
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            };
+            _cache.Set(cacheKey, analytics, cacheOptions);
+
+            return analytics;
         }
 
         public async Task<ProjectAnalyticsDto?> GetProjectAnalyticsAsync(int projectId, int userId)
         {
+            // Try to get from cache
+            string cacheKey = $"analytics:project:{projectId}";
+            
+            if (_cache.TryGetValue(cacheKey, out ProjectAnalyticsDto? cachedAnalytics))
+            {
+                return cachedAnalytics!;
+            }
+
+            // Cache miss - compute analytics
             var project = await _context.Projects
                 .Include(p => p.Tasks)
                 .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);
@@ -61,7 +92,7 @@ namespace DevFlow.Infrastructure.Repositories
             if (project == null)
                 return null;
 
-            return new ProjectAnalyticsDto
+            var analytics = new ProjectAnalyticsDto
             {
                 ProjectId = project.Id,
                 ProjectName = project.Name,
@@ -75,6 +106,15 @@ namespace DevFlow.Infrastructure.Repositories
                 OldestTaskDate = project.Tasks.Any() ? project.Tasks.Min(t => t.CreatedAt) : null,
                 NewestTaskDate = project.Tasks.Any() ? project.Tasks.Max(t => t.CreatedAt) : null
             };
+
+            // Store in cache (5 minutes)
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            };
+            _cache.Set(cacheKey, analytics, cacheOptions);
+
+            return analytics;
         }
     }
 }

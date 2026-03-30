@@ -154,3 +154,7 @@ D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\refint\DevFlow.API.dl
 D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\DevFlow.API.pdb
 D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\DevFlow.API.genruntimeconfig.cache
 D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\ref\DevFlow.API.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
