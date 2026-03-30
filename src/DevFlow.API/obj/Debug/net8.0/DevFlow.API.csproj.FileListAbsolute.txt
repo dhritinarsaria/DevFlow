@@ -6,6 +6,7 @@ D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\DevFlow.API.deps.json
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\DevFlow.API.runtimeconfig.json
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\DevFlow.API.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\DevFlow.API.pdb
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\AspNetCoreRateLimit.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Azure.Core.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Azure.Identity.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\BCrypt.Net-Next.dll
@@ -23,6 +24,8 @@ D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.EntityFrame
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
@@ -30,6 +33,7 @@ D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Identity.Client.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
@@ -53,6 +57,7 @@ D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Composition.Ho
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Composition.Runtime.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Composition.TypedParts.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Drawing.Common.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
 D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Memory.Data.dll
@@ -154,7 +159,3 @@ D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\refint\DevFlow.API.dl
 D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\DevFlow.API.pdb
 D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\DevFlow.API.genruntimeconfig.cache
 D:\claude_project\DevFlow\src\DevFlow.API\obj\Debug\net8.0\ref\DevFlow.API.dll
-D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
-D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
-D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
-D:\claude_project\DevFlow\src\DevFlow.API\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll

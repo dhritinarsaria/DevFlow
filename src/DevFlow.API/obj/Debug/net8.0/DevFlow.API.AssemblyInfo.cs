@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DevFlow.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e08b1cf27a06c69f1d86dedc70fcb89588068285")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+84756e8f638b6481175dcfe3cbae19614d0b83c2")]
 [assembly: System.Reflection.AssemblyProductAttribute("DevFlow.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DevFlow.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

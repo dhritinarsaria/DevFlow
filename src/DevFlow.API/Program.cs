@@ -10,8 +10,18 @@ using System.Text;
 using DevFlow.API.Hubs;
 using DevFlow.Application.Interfaces.Services;
 using DevFlow.API.Services;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -125,8 +135,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
+app.UseIpRateLimiting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll"); 
 app.MapHub<TaskHub>("/hubs/tasks");
